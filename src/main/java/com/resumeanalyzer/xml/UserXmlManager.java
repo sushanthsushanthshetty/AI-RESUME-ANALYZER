@@ -19,7 +19,16 @@ public class UserXmlManager {
 
     public UserXmlManager() {
         // Default path for production/running
-        this.xmlPath = "src/main/resources/users.xml";
+        this.xmlPath = getDataDir() + "/users.xml";
+    }
+
+    private static String getDataDir() {
+        String dir = System.getenv("DATA_DIR");
+        if (dir == null || dir.isBlank()) {
+            dir = System.getProperty("user.home") + "/apex-data";
+        }
+        new File(dir).mkdirs();
+        return dir;
     }
 
     public UserXmlManager(String customPath) {

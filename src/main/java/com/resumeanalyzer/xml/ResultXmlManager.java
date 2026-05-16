@@ -19,7 +19,16 @@ public class ResultXmlManager {
     private String baseResultsPath;
 
     public ResultXmlManager() {
-        this.baseResultsPath = "src/main/resources/results/";
+        this.baseResultsPath = getDataDir() + "/results/";
+    }
+
+    private static String getDataDir() {
+        String dir = System.getenv("DATA_DIR");
+        if (dir == null || dir.isBlank()) {
+            dir = System.getProperty("user.home") + "/apex-data";
+        }
+        new File(dir).mkdirs();
+        return dir;
     }
 
     public ResultXmlManager(String customPath) {
