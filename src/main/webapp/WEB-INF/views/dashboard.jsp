@@ -315,9 +315,9 @@
             <i class="ti ti-upload" style="color: var(--accent);"></i> Analyze New Resume
         </div>
         <div class="card">
-            <% if (request.getAttribute("error") != null) { %>
-                <div class="alert-error"><i class="ti ti-alert-circle"></i> <%= request.getAttribute("error") %></div>
-            <% } %>
+            <c:if test="${not empty error}">
+                <div class="alert-error"><i class="ti ti-alert-circle"></i> ${error}</div>
+            </c:if>
 
             <form id="uploadForm" action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data">
                 <div class="form-group">
@@ -413,14 +413,15 @@
             <i class="ti ti-history" style="color: var(--info);"></i> My Analyses
         </div>
         <div class="card">
-            <% if (total == 0) { %>
+            <c:if test="${empty results}">
                 <div class="empty-state">
                     <span class="empty-icon">📋</span>
                     <h3 class="empty-title">No analyses yet</h3>
                     <p class="empty-subtitle">Upload your first resume above to get started</p>
                     <a href="#upload-section" class="btn-jump">Analyze Now →</a>
                 </div>
-            <% } else { %>
+            </c:if>
+            <c:if test="${not empty results}">
                 <div class="table-controls">
                     <div class="search-box">
                         <i class="ti ti-search"></i>
@@ -441,35 +442,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (AnalysisResult res : results) { 
-                                String scoreColor = res.getScore() >= 70 ? "var(--success)" : (res.getScore() >= 50 ? "var(--warning)" : "var(--danger)");
-                                String fitColor = "Strong".equals(res.getRoleFit()) ? "var(--success)" : ("Moderate".equals(res.getRoleFit()) ? "var(--warning)" : "var(--danger)");
-                            %>
+                            <c:forEach items="${results}" var="res">
+                            <c:set var="scoreColor" value="${res.score >= 70 ? 'var(--success)' : (res.score >= 50 ? 'var(--warning)' : 'var(--danger)')}"/>
+                            <c:set var="fitColor" value="${res.roleFit == 'Strong' ? 'var(--success)' : (res.roleFit == 'Moderate' ? 'var(--warning)' : 'var(--danger)')}"/>
                             <tr>
-                                <td style="color: var(--text-muted); font-size: 0.75rem;"><%= res.getTimestamp().split("T")[0] %></td>
-                                <td class="role-cell" style="font-weight: 600;"><%= res.getTargetRole() %></td>
+                                <td style="color: var(--text-muted); font-size: 0.75rem;">${res.timestamp.split('T')[0]}</td>
+                                <td class="role-cell" style="font-weight: 600;">${res.targetRole}</td>
                                 <td>
-                                    <span class="score-pill" style="background: rgba(<%= scoreColor.contains("success") ? "16, 185, 129" : (scoreColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.15); color: <%= scoreColor %>">
-                                        <%= res.getScore() %>%
+                                    <span class="score-pill" style="background: rgba(${scoreColor.contains('success') ? '16, 185, 129' : (scoreColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.15); color: ${scoreColor}">
+                                        ${res.score}%
                                     </span>
                                 </td>
-                                <td style="font-weight: 700;"><%= res.getScoreGrade() %></td>
+                                <td style="font-weight: 700;">${res.scoreGrade}</td>
                                 <td>
-                                    <span class="fit-badge" style="background: rgba(<%= fitColor.contains("success") ? "16, 185, 129" : (fitColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.1); color: <%= fitColor %>">
-                                        <%= res.getRoleFit() %>
+                                    <span class="fit-badge" style="background: rgba(${fitColor.contains('success') ? '16, 185, 129' : (fitColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.1); color: ${fitColor}">
+                                        ${res.roleFit}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="<%= request.getContextPath() %>/result?id=<%= res.getId() %>" class="btn-view">
+                                    <a href="${pageContext.request.contextPath}/result?id=${res.id}" class="btn-view">
                                         <i class="ti ti-eye"></i> View
                                     </a>
                                 </td>
                             </tr>
-                            <% } %>
+                            </c:forEach>
                         </tbody>
                     </table>
                 </div>
-            <% } %>
+            </c:if>
         </div>
 
         <!-- Footer -->

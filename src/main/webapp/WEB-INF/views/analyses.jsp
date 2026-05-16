@@ -138,52 +138,48 @@
             </select>
         </div>
 
-        <%
-            List<AnalysisResult> results = (List<AnalysisResult>) request.getAttribute("results");
-            if (results == null || results.isEmpty()) {
-        %>
+        <c:if test="${empty results}">
             <div class="empty-state">
                 <i class="ti ti-clipboard" style="font-size: 4rem; display: block; margin-bottom: 1rem;"></i>
                 <p>No analyses yet — go analyze your first resume!</p>
             </div>
-        <% } else { %>
+        </c:if>
+        <c:if test="${not empty results}">
             <div class="results-grid" id="resultsGrid">
-                <% for (AnalysisResult res : results) { 
-                    String scoreColor = res.getScore() >= 70 ? "var(--success)" : (res.getScore() >= 50 ? "var(--warning)" : "var(--danger)");
-                    String fitColor = "Strong".equals(res.getRoleFit()) ? "var(--success)" : ("Moderate".equals(res.getRoleFit()) ? "var(--warning)" : "var(--danger)");
-                    String summary = res.getSummary();
-                    if (summary.length() > 100) summary = summary.substring(0, 97) + "...";
-                %>
+                <c:forEach items="${results}" var="res">
+                <c:set var="scoreColor" value="${res.score >= 70 ? 'var(--success)' : (res.score >= 50 ? 'var(--warning)' : 'var(--danger)')}"/>
+                <c:set var="fitColor" value="${res.roleFit == 'Strong' ? 'var(--success)' : (res.roleFit == 'Moderate' ? 'var(--warning)' : 'var(--danger)')}"/>
+                <c:set var="summary" value="${res.summary.length() > 100 ? res.summary.substring(0, 97).concat('...') : res.summary}"/>
                 <div class="result-card" 
-                     data-role="<%= res.getTargetRole().toLowerCase() %>" 
-                     data-grade="<%= res.getScoreGrade() %>" 
-                     data-fit="<%= res.getRoleFit() %>"
-                     data-score="<%= res.getScore() %>"
-                     data-timestamp="<%= res.getTimestamp() %>">
+                     data-role="${res.targetRole.toLowerCase()}" 
+                     data-grade="${res.scoreGrade}" 
+                     data-fit="${res.roleFit}"
+                     data-score="${res.score}"
+                     data-timestamp="${res.timestamp}">
                     
-                    <div class="score-circle" style="border-color: <%= scoreColor %>; color: <%= scoreColor %>">
-                        <%= res.getScore() %>%
+                    <div class="score-circle" style="border-color: ${scoreColor}; color: ${scoreColor}">
+                        ${res.score}%
                     </div>
                     
-                    <h3 class="role-name"><%= res.getTargetRole() %></h3>
-                    <div class="result-date"><%= res.getTimestamp().replace("T", " ") %></div>
+                    <h3 class="role-name">${res.targetRole}</h3>
+                    <div class="result-date">${res.timestamp.replace('T', ' ')}</div>
                     
                     <div class="badges">
-                        <span class="badge" style="background: rgba(255,255,255,0.05); color: white;">Grade <%= res.getScoreGrade() %></span>
-                        <span class="badge" style="background: rgba(<%= fitColor.contains("success") ? "16, 185, 129" : (fitColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.1); color: <%= fitColor %>">
-                            <%= res.getRoleFit() %>
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: white;">Grade ${res.scoreGrade}</span>
+                        <span class="badge" style="background: rgba(${fitColor.contains('success') ? '16, 185, 129' : (fitColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.1); color: ${fitColor}">
+                            ${res.roleFit}
                         </span>
                     </div>
                     
-                    <p class="summary-text"><%= summary %></p>
+                    <p class="summary-text">${summary}</p>
                     
-                    <a href="<%= request.getContextPath() %>/result?id=<%= res.getId() %>" class="btn-view-full">
+                    <a href="${pageContext.request.contextPath}/result?id=${res.id}" class="btn-view-full">
                         View Full Report <i class="ti ti-arrow-right"></i>
                     </a>
                 </div>
-                <% } %>
+                </c:forEach>
             </div>
-        <% } %>
+        </c:if>
     </div>
 
     <script>

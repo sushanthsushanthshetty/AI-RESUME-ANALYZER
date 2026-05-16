@@ -103,101 +103,100 @@
 </head>
 <body>
 
-    <% Roadmap rm = (Roadmap) request.getAttribute("roadmap"); %>
 
-    <a href="<%= request.getContextPath() %>/result?id=<%= request.getAttribute("analysisId") %>" class="back-link">← Back to Analysis Report</a>
+
+    <a href="${pageContext.request.contextPath}/result?id=${analysisId}" class="back-link">← Back to Analysis Report</a>
 
     <div class="header">
         <div class="title-group">
             <h1>Expert Skill Roadmap</h1>
-            <div class="subtitle">Personalized 12-week mastery path for <strong><%= rm.getTargetRole() %></strong></div>
+            <div class="subtitle">Personalized 12-week mastery path for <strong>${roadmap.targetRole}</strong></div>
         </div>
         <div style="text-align: right;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Roadmap ID</div>
-            <div style="font-family: monospace; font-size: 0.875rem;"><%= rm.getRoadmapId() %></div>
+            <div style="font-family: monospace; font-size: 0.875rem;">${roadmap.roadmapId}</div>
         </div>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Duration</div>
-            <div class="stat-value"><%= rm.getTotalDuration() %></div>
+            <div class="stat-value">${roadmap.totalDuration}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Learning Hours</div>
-            <div class="stat-value"><%= rm.getTotalHours() %> hrs</div>
+            <div class="stat-value">${roadmap.totalHours} hrs</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Estimated Cost</div>
-            <div class="stat-value"><%= rm.getEstimatedCost() %></div>
+            <div class="stat-value">${roadmap.estimatedCost}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Success Probability</div>
-            <div class="stat-value" style="color: var(--success);"><%= rm.getMotivationalMetrics().getSuccessProbability() %></div>
+            <div class="stat-value" style="color: var(--success);">${roadmap.motivationalMetrics.successProbability}</div>
         </div>
     </div>
 
     <div class="section-title">🎯 Skill-Gap Analysis</div>
     <div class="skills-grid">
-        <% for (Roadmap.SkillEntry skill : rm.getSkills()) { 
-            String catClass = "cat-" + skill.getCategory().toLowerCase();
-        %>
+        <c:forEach items="${roadmap.skills}" var="skill">
+            <c:set var="catClass" value="cat-${skill.category.toLowerCase()}"/>
             <div class="skill-card">
                 <div class="skill-header">
-                    <span class="skill-name"><%= skill.getSkillName() %></span>
-                    <span class="category-badge <%= catClass %>"><%= skill.getCategory() %></span>
+                    <span class="skill-name">${skill.skillName}</span>
+                    <span class="category-badge ${catClass}">${skill.category}</span>
                 </div>
                 <div class="skill-body">
                     <div class="level-bar-container">
                         <div class="level-label">
                             <span>Proficiency Level</span>
-                            <span><%= skill.getCurrentLevel() %> → <%= skill.getTargetLevel() %></span>
+                            <span>${skill.currentLevel} → ${skill.targetLevel}</span>
                         </div>
                         <div class="level-bar">
-                            <div class="level-fill" style="width: <%= (skill.getCurrentLevel() / 5.0) * 100 %>%"></div>
-                            <div class="level-target" style="left: <%= (skill.getTargetLevel() / 5.0) * 100 %>%"></div>
+                            <div class="level-fill" style="width: ${(skill.currentLevel / 5.0) * 100}%"></div>
+                            <div class="level-target" style="left: ${(skill.targetLevel / 5.0) * 100}%"></div>
                         </div>
                     </div>
-
-                    <% for (Roadmap.Phase phase : skill.getPhases()) { %>
+ 
+                    <c:forEach items="${skill.phases}" var="phase">
                         <div class="phase-item active">
-                            <div class="phase-name"><%= phase.getPhaseName() %></div>
-                            <div class="phase-meta">⏱ <%= phase.getDuration() %> | 📚 <%= phase.getHours() %> hours</div>
+                            <div class="phase-name">${phase.phaseName}</div>
+                            <div class="phase-meta">⏱ ${phase.duration} | 📚 ${phase.hours} hours</div>
                             <div class="resource-list">
-                                <% for (Roadmap.Resource res : phase.getResources()) { %>
-                                    <a href="<%= res.getLink() %>" target="_blank" class="resource-link">
-                                        <span><%= res.getName() %> <span class="res-type"><%= res.getType() %></span></span>
-                                        <span style="color: var(--text-muted); font-size: 0.7rem;"><%= "Free".equals(res.getType()) ? "FREE" : res.getPrice() %></span>
+                                <c:forEach items="${phase.resources}" var="res">
+                                    <a href="${res.link}" target="_blank" class="resource-link">
+                                        <span>${res.name} <span class="res-type">${res.type}</span></span>
+                                        <span style="color: var(--text-muted); font-size: 0.7rem;">${res.type == 'Free' ? 'FREE' : res.price}</span>
                                     </a>
-                                <% } %>
+                                </c:forEach>
                             </div>
                             <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--success); font-weight: 600;">
-                                🏁 Milestone: <%= phase.getMilestone() %>
+                                🏁 Milestone: ${phase.milestone}
                             </div>
                         </div>
-                    <% } %>
+                    </c:forEach>
                 </div>
             </div>
-        <% } %>
+        </c:forEach>
     </div>
 
     <div class="section-title">📅 12-Week Master Timeline</div>
     <div class="timeline-container">
         <div class="timeline-grid">
-            <% for (Roadmap.TimelineItem item : rm.getTimeline()) { %>
+            <c:forEach items="${roadmap.timeline}" var="item">
                 <div class="timeline-week">
-                    <div class="week-num">Week <%= item.getWeek() %></div>
-                    <div class="week-focus"><%= item.getFocus() %></div>
+                    <div class="week-num">Week ${item.week}</div>
+                    <div class="week-focus">${item.focus}</div>
                     <ul class="week-tasks">
-                        <% for (String task : item.getTasks()) { %>
-                            <li><%= task %></li>
-                        <% } %>
+                        <c:forEach items="${item.tasks}" var="task">
+                            <li>${task}</li>
+                        </c:forEach>
                     </ul>
                     <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">
-                        <strong>Outcome:</strong> <%= item.getExpectedOutcome() %>
+                        <strong>Outcome:</strong> ${item.expectedOutcome}
                     </div>
                 </div>
-            <% } %>
+            </c:forEach>
         </div>
     </div>
 
@@ -205,17 +204,17 @@
         <div class="list-card">
             <div class="section-title" style="color: var(--warning);">🛑 Risk Mitigation</div>
             <ul class="risk-list">
-                <% for (String risk : rm.getRiskMitigation()) { %>
-                    <li><%= risk %></li>
-                <% } %>
+                <c:forEach items="${roadmap.riskMitigation}" var="risk">
+                    <li>${risk}</li>
+                </c:forEach>
             </ul>
         </div>
         <div class="list-card">
             <div class="section-title" style="color: var(--success);">🏆 Success Checklist</div>
             <ul class="success-list">
-                <% for (String item : rm.getSuccessChecklist()) { %>
-                    <li><%= item %></li>
-                <% } %>
+                <c:forEach items="${roadmap.successChecklist}" var="item">
+                    <li>${item}</li>
+                </c:forEach>
             </ul>
         </div>
     </div>
@@ -223,10 +222,10 @@
     <div class="stat-card" style="text-align: center; background: linear-gradient(135deg, var(--card) 0%, rgba(129, 140, 248, 0.05) 100%);">
         <div class="stat-label">Estimated ROI</div>
         <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">
-            Score Improvement: <span style="color: var(--success);"><%= rm.getMotivationalMetrics().getScoreImprovement() %></span>
+            Score Improvement: <span style="color: var(--success);">${roadmap.motivationalMetrics.scoreImprovement}</span>
         </div>
         <div style="font-size: 1.125rem; color: var(--text-muted);">
-            Expected Salary: <span style="color: white;"><%= rm.getMotivationalMetrics().getSalaryGrowth() %></span>
+            Expected Salary: <span style="color: white;">${roadmap.motivationalMetrics.salaryGrowth}</span>
         </div>
     </div>
 

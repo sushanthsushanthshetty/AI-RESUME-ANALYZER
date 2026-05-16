@@ -158,29 +158,25 @@
 </head>
 <body>
 
-    <% 
-        AnalysisResult res = (AnalysisResult) request.getAttribute("result");
-        String scoreColor = res.getScore() >= 70 ? "var(--success)" : (res.getScore() >= 50 ? "var(--warning)" : "var(--danger)");
-        String fitColor = "Strong".equals(res.getRoleFit()) ? "var(--success)" : ("Moderate".equals(res.getRoleFit()) ? "var(--warning)" : "var(--danger)");
-        float offset = 339.29f * (1 - res.getScore() / 100f);
-    %>
+    <c:set var="scoreColor" value="${result.score >= 70 ? 'var(--success)' : (result.score >= 50 ? 'var(--warning)' : 'var(--danger)')}"/>
+    <c:set var="fitColor" value="${result.roleFit == 'Strong' ? 'var(--success)' : (result.roleFit == 'Moderate' ? 'var(--warning)' : 'var(--danger)')}"/>
+    <c:set var="offset" value="${339.29 * (1 - result.score / 100.0)}"/>
 
     <a href="<%= request.getContextPath() %>/dashboard" class="back-link">← Back to Dashboard</a>
 
-    <% String error = (String) request.getAttribute("error"); 
-       if (error != null) { %>
+    <c:if test="${not empty error}">
         <div class="error-alert">
-            <span>⚠️</span> <%= error %>
+            <span>⚠️</span> ${error}
         </div>
-    <% } %>
+    </c:if>
 
     <div class="header-card">
         <div>
-            <div class="role-title"><%= res.getTargetRole() %></div>
-            <div class="timestamp">Analyzed on <%= res.getTimestamp().replace("T", " at ") %></div>
+            <div class="role-title">${result.targetRole}</div>
+            <div class="timestamp">Analyzed on ${result.timestamp.replace('T', ' at ')}</div>
             
             <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                <a href="<%= request.getContextPath() %>/result?id=<%= res.getId() %>&format=xml" class="btn-download">
+                <a href="${pageContext.request.contextPath}/result?id=${result.id}&format=xml" class="btn-download">
                     <span>↓</span> Download XML
                 </a>
                 <button onclick="window.print()" class="btn-print">
@@ -192,41 +188,41 @@
             <svg class="score-svg">
                 <circle class="score-bg" cx="60" cy="60" r="54"></circle>
                 <circle class="score-progress" cx="60" cy="60" r="54" 
-                        style="stroke: <%= scoreColor %>; stroke-dasharray: 339.29; stroke-dashoffset: <%= offset %>;"></circle>
+                        style="stroke: ${scoreColor}; stroke-dasharray: 339.29; stroke-dashoffset: ${offset};"></circle>
             </svg>
             <div class="score-text-container">
-                <div class="score-num"><%= res.getScore() %></div>
-                <div class="grade-letter">Grade <%= res.getScoreGrade() %></div>
+                <div class="score-num">${result.score}</div>
+                <div class="grade-letter">Grade ${result.scoreGrade}</div>
             </div>
         </div>
     </div>
 
     <div class="grid-3">
         <div class="card">
-            <div class="badge" style="background: rgba(<%= fitColor.contains("success") ? "16, 185, 129" : (fitColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.1); color: <%= fitColor %>">
-                <%= res.getRoleFit() %> Fit
+            <div class="badge" style="background: rgba(${fitColor.contains('success') ? '16, 185, 129' : (fitColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.1); color: ${fitColor}">
+                ${result.roleFit} Fit
             </div>
-            <div class="confidence"><%= res.getConfidence() %> confidence</div>
+            <div class="confidence">${result.confidence} confidence</div>
         </div>
         <div class="card">
             <div class="section-title" style="color: var(--warning); margin-bottom: 0.5rem;">⚠ Interview Risk</div>
-            <div style="font-size: 0.875rem;"><%= res.getInterviewRisk() %></div>
+            <div style="font-size: 0.875rem;">${result.interviewRisk}</div>
         </div>
         <div class="card">
             <div class="section-title" style="color: var(--success); margin-bottom: 0.5rem;">★ Market Edge</div>
-            <div style="font-size: 0.875rem;"><%= res.getMarketEdge() %></div>
+            <div style="font-size: 0.875rem;">${result.marketEdge}</div>
         </div>
     </div>
 
     <div class="card" style="margin-bottom: 2rem;">
         <div class="section-title">Analysis Summary</div>
-        <p><%= res.getSummary() %></p>
+        <p>${result.summary}</p>
     </div>
 
     <div class="roadmap-cta">
         <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">🚀 Bridge Your Skill Gaps</h2>
         <p style="color: var(--text-muted);">Get a personalized 12-week mastery roadmap with curated courses, projects, and milestones.</p>
-        <a href="<%= request.getContextPath() %>/roadmap?id=<%= res.getId() %>" class="roadmap-btn">
+        <a href="${pageContext.request.contextPath}/roadmap?id=${result.id}" class="roadmap-btn">
             View My Personalized Roadmap <span style="font-size: 1.2em">→</span>
         </a>
     </div>
@@ -235,52 +231,48 @@
         <div class="card">
             <div class="section-title" style="color: var(--success);">✔ Strengths</div>
             <ul class="strengths-list">
-                <% for (String s : res.getStrengths()) { %>
-                    <li><%= s %></li>
-                <% } %>
+                <c:forEach items="${result.strengths}" var="s">
+                    <li>${s}</li>
+                </c:forEach>
             </ul>
         </div>
         <div class="card">
             <div class="section-title" style="color: var(--danger);">✘ Skill Gaps</div>
-            <% for (SkillGap gap : res.getSkillGaps()) { 
-                String sevColor = "critical".equals(gap.getSeverity()) ? "var(--danger)" : ("major".equals(gap.getSeverity()) ? "var(--warning)" : "var(--text-muted)");
-            %>
+            <c:forEach items="${result.skillGaps}" var="gap">
+                <c:set var="sevColor" value="${gap.severity == 'critical' ? 'var(--danger)' : (gap.severity == 'major' ? 'var(--warning)' : 'var(--text-muted)')}"/>
                 <div class="gap-item">
                     <div class="gap-header">
-                        <span class="gap-name"><%= gap.getGap() %></span>
-                        <span class="severity-badge" style="background: rgba(<%= sevColor.contains("danger") ? "239, 68, 68" : (sevColor.contains("warning") ? "245, 158, 11" : "148, 163, 184") %>, 0.1); color: <%= sevColor %>">
-                            <%= gap.getSeverity() %>
+                        <span class="gap-name">${gap.gap}</span>
+                        <span class="severity-badge" style="background: rgba(${sevColor.contains('danger') ? '239, 68, 68' : (sevColor.contains('warning') ? '245, 158, 11' : '148, 163, 184')}, 0.1); color: ${sevColor}">
+                            ${gap.severity}
                         </span>
                     </div>
-                    <div class="gap-fix"><%= gap.getFix() %></div>
+                    <div class="gap-fix">${gap.fix}</div>
                 </div>
-            <% } %>
+            </c:forEach>
         </div>
     </div>
 
     <div class="card" style="margin-bottom: 2rem;">
         <div class="section-title">Actionable Suggestions</div>
-        <% int i = 1; for (String sug : res.getSuggestions()) { %>
+        <c:forEach items="${result.suggestions}" var="sug" varStatus="status">
             <div class="suggestion-box">
-                <strong><%= i++ %>.</strong> <%= sug %>
+                <strong>${status.count}.</strong> ${sug}
             </div>
-        <% } %>
+        </c:forEach>
     </div>
 
     <div class="card">
         <div class="section-title">ATS Keywords Missing from Your Resume</div>
         <div style="margin-bottom: 1rem;">
-            <% for (String kw : res.getKeywordMisses()) { %>
-                <span class="pill"><%= kw %></span>
-            <% } %>
+            <c:forEach items="${result.keywordMisses}" var="kw">
+                <span class="pill">${kw}</span>
+            </c:forEach>
         </div>
         <div style="font-size: 0.75rem; color: var(--text-muted);">Add these exact words to pass ATS filters</div>
     </div>
 
-    <% 
-        List<JobListing> jobs = (List<JobListing>) request.getAttribute("recommendedJobs");
-        if (jobs != null && !jobs.isEmpty()) { 
-    %>
+    <c:if test="${not empty recommendedJobs}">
     <div class="jobs-section">
         <div class="jobs-header">
             <div class="jobs-title">💼 Recommended Jobs For You</div>
@@ -288,29 +280,29 @@
         </div>
         
         <div class="jobs-grid">
-            <% for (JobListing job : jobs) { %>
+            <c:forEach items="${recommendedJobs}" var="job">
                 <div class="job-card">
-                    <div class="job-source-badge <%= "LinkedIn".equals(job.getSource()) ? "source-linkedin" : ("Naukri".equals(job.getSource()) ? "source-naukri" : "source-google") %>">
-                        <%= job.getSource() %>
+                    <div class="job-source-badge ${job.source == 'LinkedIn' ? 'source-linkedin' : (job.source == 'Naukri' ? 'source-naukri' : 'source-google')}">
+                        ${job.source}
                     </div>
-                    <div class="job-title"><%= job.getTitle() %></div>
-                    <div class="job-company"><%= job.getCompany() %></div>
+                    <div class="job-title">${job.title}</div>
+                    <div class="job-company">${job.company}</div>
                     <div class="job-meta">
-                        <div class="job-meta-item">📍 <%= job.getLocation() %></div>
-                        <div class="job-meta-item">🕒 <%= job.getPostedDate() %></div>
+                        <div class="job-meta-item">📍 ${job.location}</div>
+                        <div class="job-meta-item">🕒 ${job.postedDate}</div>
                     </div>
-                    <div class="job-snippet"><%= job.getDescriptionSnippet() %></div>
-                    <a href="<%= job.getApplyLink() %>" target="_blank" class="apply-btn">
-                        <%= "Search Results".equals(job.getCompany()) ? "Search Now" : "Apply Now" %> <span style="font-size: 1.1em">→</span>
+                    <div class="job-snippet">${job.descriptionSnippet}</div>
+                    <a href="${job.applyLink}" target="_blank" class="apply-btn">
+                        ${job.company == 'Search Results' ? 'Search Now' : 'Apply Now'} <span style="font-size: 1.1em">→</span>
                     </a>
                 </div>
-            <% } %>
+            </c:forEach>
         </div>
         <div class="jobs-note">Jobs fetched live. Always verify details and company legitimacy before applying.</div>
     </div>
-    <% } %>
+    </c:if>
 
-    <a href="<%= request.getContextPath() %>/result?id=<%= res.getId() %>&format=xml" class="export-link">Download as XML</a>
+    <a href="${pageContext.request.contextPath}/result?id=${result.id}&format=xml" class="export-link">Download as XML</a>
 
 </body>
 </html>
