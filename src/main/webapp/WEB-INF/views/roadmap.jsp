@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="com.resumeanalyzer.model.Roadmap" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
