@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<analyses>
+    
+  <analysis id="104cd101-d468-402c-b3fe-f88bf32e9214" timestamp="2026-05-22T14:02:02.7066276">
+        
+    <targetRole>FRONT END DEVELPOER</targetRole>
+        
+    <location>Bangalore</location>
+        
+    <yearsOfExperience>2</yearsOfExperience>
+        
+    <score>22</score>
+        
+    <confidence>high</confidence>
+        
+    <roleFit>Mismatch</roleFit>
+        
+    <summary>DOMAIN MISMATCH DETECTED: The candidate's experience is focused on Java backend development and does not meet the core frontend skill requirements for the Front End Developer role. Consequently, the fit for this position is poor despite solid engineering fundamentals.</summary>
+        
+    <strengths>
+            
+      <strength>The candidate demonstrates strong backend development expertise, having built scalable REST APIs with Spring Boot, optimized database queries, and led microservice architecture for high‑traffic e‑commerce platforms, showcasing solid problem‑solving and clean‑code practices.</strength>
+          
+    </strengths>
+        
+    <skillGaps>
+            
+      <gap severity="critical">
+                
+        <title>React</title>
+                
+        <fix>Complete a 30‑day React fundamentals course and build a small SPA project to demonstrate proficiency.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>HTML</title>
+                
+        <fix>Study modern HTML5 semantics and create a portfolio page to showcase markup skills.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>CSS</title>
+                
+        <fix>Learn CSS Flexbox and Grid, then redesign the portfolio page with responsive styling.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>JavaScript</title>
+                
+        <fix>Complete a 30‑day JavaScript ES6+ bootcamp and implement interactive features on the portfolio site.</fix>
+              
+      </gap>
+            
+      <gap severity="major">
+                
+        <title>UI/UX design</title>
+                
+        <fix>Take a short UI/UX fundamentals course and apply design principles to improve the portfolio's user experience.</fix>
+              
+      </gap>
+          
+    </skillGaps>
+        
+    <keywordMisses>
+            
+      <keyword>Hibernate</keyword>
+            
+      <keyword>Design Patterns</keyword>
+            
+      <keyword>SOLID</keyword>
+            
+      <keyword>JUnit</keyword>
+            
+      <keyword>Mockito</keyword>
+            
+      <keyword>AWS</keyword>
+          
+    </keywordMisses>
+        
+    <suggestions>
+            
+      <suggestion>Add a dedicated 'Frontend Skills' subsection under Technical Skills highlighting React, HTML, CSS, and JavaScript to directly address the role's primary domain.</suggestion>
+            
+      <suggestion>Include a brief description of UI/UX design experience or coursework in the Professional Summary to demonstrate relevance to frontend responsibilities.</suggestion>
+            
+      <suggestion>Showcase any personal or side projects that involve building user interfaces, linking them to the Projects section to provide concrete evidence of frontend capability.</suggestion>
+          
+    </suggestions>
+        
+    <interviewRisk>High risk of being screened out due to lack of core frontend competencies required for the role.</interviewRisk>
+        
+    <marketEdge>NONE</marketEdge>
+      
+    <roadmapId>cbc4fdc6-1f59-49e3-806a-90c54ccfc801</roadmapId>
+    <roadmapSavedAt>2026-05-22T14:02:46.1472628</roadmapSavedAt>
+  </analysis>
+  
+</analyses>

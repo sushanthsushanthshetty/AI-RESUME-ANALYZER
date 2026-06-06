@@ -19,16 +19,7 @@ public class ResultXmlManager {
     private String baseResultsPath;
 
     public ResultXmlManager() {
-        this.baseResultsPath = getDataDir() + "/results/";
-    }
-
-    private static String getDataDir() {
-        String dir = System.getenv("DATA_DIR");
-        if (dir == null || dir.isBlank()) {
-            dir = System.getProperty("user.home") + "/apex-data";
-        }
-        new File(dir).mkdirs();
-        return dir;
+        this.baseResultsPath = "results/";
     }
 
     public ResultXmlManager(String customPath) {
@@ -84,6 +75,11 @@ public class ResultXmlManager {
 
             addChild(doc, analysis, "interviewRisk", result.getInterviewRisk());
             addChild(doc, analysis, "marketEdge", result.getMarketEdge());
+            
+            if (result.getRoadmapId() != null) {
+                addChild(doc, analysis, "roadmapId", result.getRoadmapId());
+                addChild(doc, analysis, "roadmapSavedAt", result.getRoadmapSavedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            }
 
             root.appendChild(analysis);
             saveDocument(doc, resultFile);
@@ -156,8 +152,10 @@ public class ResultXmlManager {
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
         DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(file);
-        transformer.transform(source, result);
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
+            StreamResult result = new StreamResult(fos);
+            transformer.transform(source, result);
+        }
     }
 
     public void saveRoadmap(String userId, String analysisId, String roadmapJson) {
@@ -180,6 +178,37 @@ public class ResultXmlManager {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void updateAnalysis(String userId, AnalysisResult result) {
+        try {
+            File resultFile = new File(baseResultsPath + userId + ".xml");
+            Document doc = getDocument(resultFile);
+            NodeList list = doc.getElementsByTagName("analysis");
+            for (int i = 0; i < list.getLength(); i++) {
+                Element el = (Element) list.item(i);
+                if (el.getAttribute("id").equals(result.getId())) {
+                    // Update roadmap info
+                    updateOrAddChild(doc, el, "roadmapId", result.getRoadmapId());
+                    if (result.getRoadmapSavedAt() != null) {
+                        updateOrAddChild(doc, el, "roadmapSavedAt", result.getRoadmapSavedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    }
+                    saveDocument(doc, resultFile);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateOrAddChild(Document doc, Element parent, String name, String value) {
+        NodeList nl = parent.getElementsByTagName(name);
+        if (nl.getLength() > 0) {
+            nl.item(0).setTextContent(value != null ? value : "");
+        } else {
+            addChild(doc, parent, name, value);
         }
     }
 
@@ -240,6 +269,15 @@ public class ResultXmlManager {
         result.setInterviewRisk(getText(element, "interviewRisk"));
         result.setMarketEdge(getText(element, "marketEdge"));
 
+        String rid = getText(element, "roadmapId");
+        if (!rid.isEmpty()) {
+            result.setRoadmapId(rid);
+            String rsa = getText(element, "roadmapSavedAt");
+            if (!rsa.isEmpty()) {
+                result.setRoadmapSavedAt(LocalDateTime.parse(rsa, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            }
+        }
+
         return result;
     }
 
@@ -259,5 +297,38 @@ public class ResultXmlManager {
             }
         }
         return list;
+    }
+
+    public boolean deleteResult(String userId, String resultId) {
+        try {
+            File resultFile = new File(baseResultsPath + userId + ".xml");
+            if (!resultFile.exists()) return false;
+
+            Document doc = getDocument(resultFile);
+            NodeList list = doc.getElementsByTagName("analysis");
+            for (int i = 0; i < list.getLength(); i++) {
+                Element el = (Element) list.item(i);
+                if (el.getAttribute("id").equals(resultId)) {
+                    el.getParentNode().removeChild(el);
+                    saveDocument(doc, resultFile);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean deleteAllResults(String userId) {
+        try {
+            File resultFile = new File(baseResultsPath + userId + ".xml");
+            if (resultFile.exists()) {
+                return resultFile.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

@@ -107,4 +107,30 @@
         <servlet-name>RoadmapServlet</servlet-name>
         <url-pattern>/roadmap</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>SaveRoadmapServlet</servlet-name>
+        <servlet-class>com.resumeanalyzer.servlet.SaveRoadmapServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SaveRoadmapServlet</servlet-name>
+        <url-pattern>/save-roadmap</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>UpdateTaskProgressServlet</servlet-name>
+        <servlet-class>com.resumeanalyzer.servlet.UpdateTaskProgressServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateTaskProgressServlet</servlet-name>
+        <url-pattern>/update-task-progress</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteAnalysisServlet</servlet-name>
+        <servlet-class>com.resumeanalyzer.servlet.DeleteAnalysisServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteAnalysisServlet</servlet-name>
+        <url-pattern>/delete-analysis</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<analyses>
+    
+  <analysis id="d4468057-b970-499f-8713-f1e5f43f70c0" timestamp="2026-05-22T13:05:48.8244382">
+        
+    <targetRole>FRONTEND DEVELPOER</targetRole>
+        
+    <location>Bangalore, Karnataka, India</location>
+        
+    <yearsOfExperience>2</yearsOfExperience>
+        
+    <score>25</score>
+        
+    <confidence>high</confidence>
+        
+    <roleFit>Mismatch</roleFit>
+        
+    <summary>DOMAIN MISMATCH DETECTED: This resume is from a Java Backend background and does not meet the primary skill requirements for a FRONTEND DEVELPOER role. Only 11% of required FRONTEND domain skills were found.</summary>
+        
+    <strengths>
+            
+      <strength>Demonstrates strong backend engineering capabilities, including designing scalable REST APIs with Spring Boot, optimizing SQL queries, and delivering microservices that handle high traffic volumes.</strength>
+          
+    </strengths>
+        
+    <skillGaps>
+            
+      <gap severity="critical">
+                
+        <title>react</title>
+                
+        <fix>Complete a hands-on 30-day project using react and publish it on GitHub before applying.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>angular</title>
+                
+        <fix>Complete a hands-on 30-day project using angular and publish it on GitHub before applying.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>vue</title>
+                
+        <fix>Complete a hands-on 30-day project using vue and publish it on GitHub before applying.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>html</title>
+                
+        <fix>Complete a hands-on 30-day project using html and publish it on GitHub before applying.</fix>
+              
+      </gap>
+            
+      <gap severity="critical">
+                
+        <title>css</title>
+                
+        <fix>Complete a hands-on 30-day project using css and publish it on GitHub before applying.</fix>
+              
+      </gap>
+          
+    </skillGaps>
+        
+    <keywordMisses>
+            
+      <keyword>Hibernate</keyword>
+            
+      <keyword>Design Patterns</keyword>
+            
+      <keyword>SOLID</keyword>
+            
+      <keyword>AWS</keyword>
+            
+      <keyword>Mockito</keyword>
+            
+      <keyword>Kafka</keyword>
+            
+      <keyword>Redis</keyword>
+            
+      <keyword>GraphQL</keyword>
+            
+      <keyword>gRPC</keyword>
+          
+    </keywordMisses>
+        
+    <suggestions>
+            
+      <suggestion>Add a 'Frontend Technologies' subsection under Technical Skills listing React, HTML, CSS, and JavaScript to directly address the role’s primary domain.</suggestion>
+            
+      <suggestion>Include UI/UX design experience in the Professional Summary, highlighting any projects where you contributed to user interface design or usability testing.</suggestion>
+            
+      <suggestion>Expand the Projects section to describe any front‑end work, such as building a React component library or implementing responsive UI for the e‑commerce platform.</suggestion>
+          
+    </suggestions>
+        
+    <interviewRisk>Candidate will be screened out immediately due to absence of core FRONTEND domain skills.</interviewRisk>
+        
+    <marketEdge>NONE</marketEdge>
+      
+    <roadmapId>c6b6ae25-3c23-48c6-b476-0bfb207768f1</roadmapId>
+    <roadmapSavedAt>2026-05-22T13:07:40.9929317</roadmapSavedAt>
+  </analysis>
+  
+</analyses>

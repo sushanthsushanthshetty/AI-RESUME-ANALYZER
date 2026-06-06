@@ -1,6 +1,7 @@
 package com.resumeanalyzer.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,9 @@ public class AnalysisResult {
 
     @JsonProperty("market_edge")
     private String marketEdge;
+
+    private String roadmapId;
+    private LocalDateTime roadmapSavedAt;
 
     public String getScoreGrade() {
         if (score >= 90) return "A";
@@ -98,4 +102,10 @@ public class AnalysisResult {
 
     public String getMarketEdge() { return marketEdge; }
     public void setMarketEdge(String marketEdge) { this.marketEdge = marketEdge; }
+
+    public String getRoadmapId() { return roadmapId; }
+    public void setRoadmapId(String roadmapId) { this.roadmapId = roadmapId; }
+
+    public LocalDateTime getRoadmapSavedAt() { return roadmapSavedAt; }
+    public void setRoadmapSavedAt(LocalDateTime roadmapSavedAt) { this.roadmapSavedAt = roadmapSavedAt; }
 }

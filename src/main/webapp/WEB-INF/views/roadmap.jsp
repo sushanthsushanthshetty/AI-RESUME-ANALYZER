@@ -1,237 +1,312 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="com.resumeanalyzer.model.Roadmap" %>
+<%@ page import="com.resumeanalyzer.model.RoadmapTask" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personalized Roadmap - APEX</title>
+    <title>${roadmap.targetRole} Roadmap - APEX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <style>
         :root {
-            --bg: #0B0F1A;
-            --card: #161E2E;
-            --accent: #818CF8;
-            --accent-glow: rgba(129, 140, 248, 0.3);
+            --bg: #0F172A;
+            --card: #1E293B;
+            --accent: #6366F1;
+            --accent-hover: #4F46E5;
             --success: #10B981;
-            --warning: #F59E0B;
             --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
             --text: #F8FAFC;
             --text-muted: #94A3B8;
-            --border: rgba(255, 255, 255, 0.08);
+            --sidebar-w: 240px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 3rem 5rem; max-width: 1300px; margin: 0 auto; line-height: 1.6; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
-        .back-link { display: inline-block; margin-bottom: 2rem; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
-        .back-link:hover { color: var(--accent); }
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-w);
+            background-color: var(--card);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 1.25rem;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-brand h1 { font-size: 1.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+        .sidebar-brand p { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; margin-bottom: 2.5rem; }
+        .nav-item { 
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-muted); 
+            text-decoration: none; border-radius: 0.5rem; margin-bottom: 0.4rem; font-weight: 500; transition: all 0.2s; 
+        }
+        .nav-item.active { background-color: rgba(99, 102, 241, 0.1); color: var(--accent); }
+        .nav-item:hover:not(.active) { color: var(--text); background-color: rgba(255, 255, 255, 0.05); }
 
-        .header { margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: flex-end; }
-        .title-group h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff 0%, #94A3B8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: var(--text-muted); font-size: 1.125rem; }
+        .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 2rem 3rem; max-width: 1200px; width: 100%; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
-        .stat-card { background: var(--card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+        .header-section { margin-bottom: 2.5rem; }
+        .breadcrumb { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .roadmap-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .roadmap-meta { font-size: 0.9375rem; color: var(--text-muted); }
 
-        .section-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        /* Progress Card */
+        .progress-card {
+            background: var(--card); border-radius: 1rem; padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; gap: 3rem; margin-bottom: 2.5rem;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+        .progress-meter { position: relative; width: 120px; height: 120px; }
+        .progress-meter svg { transform: rotate(-90deg); width: 120px; height: 120px; }
+        .progress-meter circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+        .progress-bg { stroke: rgba(255, 255, 255, 0.05); }
+        .progress-fill { stroke: var(--accent); transition: stroke-dashoffset 0.5s ease; }
+        .progress-text { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 1.5rem; font-weight: 800; color: white;
+        }
+        .progress-info h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .progress-info p { color: var(--text-muted); font-size: 0.9375rem; }
+        .stats-row { display: flex; gap: 2rem; margin-top: 1.5rem; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+        .stat-value { font-weight: 700; font-size: 1.125rem; }
 
-        /* Skills Section */
-        .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
-        .skill-card { background: var(--card); border-radius: 1.5rem; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
-        .skill-header { padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        /* Task Cards */
+        .tasks-grid { display: grid; gap: 1.5rem; }
+        .task-card { 
+            background: var(--card); border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem; transition: transform 0.2s;
+        }
+        .task-card.completed { opacity: 0.7; border-left: 4px solid var(--success); }
+        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
         .skill-name { font-size: 1.25rem; font-weight: 700; }
-        .category-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .cat-critical { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .cat-major { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
-        .cat-minor { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
-
-        .skill-body { padding: 1.5rem; flex: 1; }
-        .level-bar-container { margin-bottom: 1.5rem; }
-        .level-label { display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.5rem; color: var(--text-muted); }
-        .level-bar { height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; position: relative; }
-        .level-fill { height: 100%; background: var(--accent); border-radius: 4px; }
-        .level-target { position: absolute; top: 0; width: 4px; height: 100%; background: white; opacity: 0.5; box-shadow: 0 0 10px white; }
-
-        .phase-item { margin-bottom: 1.5rem; padding-left: 1.5rem; border-left: 2px solid var(--border); position: relative; }
-        .phase-item::before { content: ''; position: absolute; left: -5px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
-        .phase-item.active::before { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .phase-name { font-weight: 700; font-size: 0.9375rem; margin-bottom: 0.25rem; }
-        .phase-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge.critical { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge.major { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge.minor { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); }
         
-        .resource-list { display: flex; flex-direction: column; gap: 0.5rem; }
-        .resource-link { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: 0.75rem;
-            text-decoration: none; color: var(--text); font-size: 0.8125rem; transition: all 0.2s;
-            border: 1px solid transparent;
+        .task-body { margin-bottom: 1.5rem; }
+        .task-description { color: var(--text-muted); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1rem; }
+        .action-plan { background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 0.5rem; border-left: 3px solid var(--accent); font-size: 0.875rem; }
+        .action-label { display: block; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+        .resource-link { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.4rem 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.4rem; color: var(--text); font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .resource-link:hover { background: var(--accent); border-color: var(--accent); color: white; }
+
+        .timeline { font-size: 0.8125rem; color: var(--text-muted); margin-top: 1rem; display: flex; gap: 1.5rem; }
+        .timeline i { color: var(--accent); margin-right: 0.4rem; }
+
+        /* Progress Bar */
+        .progress-container { margin: 1.5rem 0; }
+        .progress-label-row { display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .progress-bar-bg { height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 999px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
+
+        /* Milestones */
+        .milestones-list { margin-top: 1.5rem; }
+        .milestone-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; font-size: 0.875rem; cursor: pointer; }
+        .milestone-item input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--success); }
+        .milestone-item.checked { color: var(--text-muted); text-decoration: line-through; }
+
+        .task-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .status-badge { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 700; }
+        .status-badge.on-track { color: var(--success); }
+        .status-badge.at-risk { color: var(--warning); }
+        .status-badge.completed { color: var(--success); }
+
+        .btn-complete { 
+            padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--accent); 
+            color: var(--accent); border-radius: 0.4rem; font-weight: 700; font-size: 0.8125rem;
+            cursor: pointer; transition: all 0.2s;
         }
-        .resource-link:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent); transform: translateX(4px); }
-        .res-type { font-size: 0.625rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem; background: rgba(255, 255, 255, 0.1); margin-left: 0.5rem; }
+        .btn-complete:hover { background: var(--accent); color: white; }
+        .btn-complete:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-muted); color: var(--text-muted); }
 
-        /* Timeline Section */
-        .timeline-container { background: var(--card); border-radius: 1.5rem; border: 1px solid var(--border); padding: 2.5rem; margin-bottom: 4rem; }
-        .timeline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
-        .timeline-week { border-top: 2px solid var(--border); padding-top: 1.5rem; }
-        .week-num { font-size: 0.75rem; font-weight: 800; color: var(--accent); margin-bottom: 0.5rem; text-transform: uppercase; }
-        .week-focus { font-weight: 700; margin-bottom: 1rem; }
-        .week-tasks { list-style: none; }
-        .week-tasks li { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; gap: 0.5rem; }
-        .week-tasks li::before { content: '→'; color: var(--accent); }
-
-        /* Bottom Grid */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
-        .list-card { background: var(--card); border-radius: 1.5rem; border: 1px solid var(--border); padding: 2rem; }
-        .list-card ul { list-style: none; }
-        .list-card li { margin-bottom: 1rem; padding-left: 1.75rem; position: relative; font-size: 0.9375rem; }
-        .list-card li::before { position: absolute; left: 0; }
-        .risk-list li::before { content: '⚠'; color: var(--warning); }
-        .success-list li::before { content: '✓'; color: var(--success); font-weight: 800; }
-
-        @media (max-width: 1000px) {
-            body { padding: 2rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .grid-2 { grid-template-columns: 1fr; }
+        /* Modal */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; 
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
         }
+        .modal-content { 
+            background: var(--card); padding: 3rem; border-radius: 1.5rem; text-align: center; max-width: 500px;
+            border: 1px solid var(--accent); box-shadow: 0 0 50px rgba(99, 102, 241, 0.3);
+        }
+        .celebration-icon { font-size: 4rem; margin-bottom: 1.5rem; display: block; }
+        .modal-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; }
+        .modal-text { color: var(--text-muted); margin-bottom: 2rem; }
+        .modal-buttons { display: flex; gap: 1rem; }
+        .btn-modal { flex: 1; padding: 1rem; border-radius: 0.5rem; font-weight: 700; cursor: pointer; border: none; }
+        .btn-share { background: var(--accent); color: white; }
+        .btn-dashboard { background: rgba(255,255,255,0.05); color: white; }
     </style>
 </head>
 <body>
+    <%
+        Roadmap roadmap = (Roadmap) request.getAttribute("roadmap");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    %>
 
-
-
-    <a href="${pageContext.request.contextPath}/result?id=${analysisId}" class="back-link">← Back to Analysis Report</a>
-
-    <div class="header">
-        <div class="title-group">
-            <h1>Expert Skill Roadmap</h1>
-            <div class="subtitle">Personalized 12-week mastery path for <strong>${roadmap.targetRole}</strong></div>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h1>APEX</h1>
+            <p>Resume Intelligence</p>
         </div>
-        <div style="text-align: right;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Roadmap ID</div>
-            <div style="font-family: monospace; font-size: 0.875rem;">${roadmap.roadmapId}</div>
-        </div>
+        <nav class="nav-group">
+            <a href="<%= request.getContextPath() %>/dashboard" class="nav-item">
+                <i class="ti ti-layout-dashboard"></i> Dashboard
+            </a>
+            <a href="<%= request.getContextPath() %>/roadmap?id=<%= roadmap.getId() %>" class="nav-item active">
+                <i class="ti ti-map"></i> My Roadmap
+            </a>
+            <a href="<%= request.getContextPath() %>/analyses" class="nav-item">
+                <i class="ti ti-folder"></i> My Analyses
+            </a>
+        </nav>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Total Duration</div>
-            <div class="stat-value">${roadmap.totalDuration}</div>
+    <div class="main-content">
+        <div class="header-section">
+            <div class="breadcrumb">
+                <a href="<%= request.getContextPath() %>/dashboard">Dashboard</a> > <span style="color: var(--text-muted)">My Roadmap</span>
+            </div>
+            <h1 class="roadmap-title">${roadmap.targetRole} Learning Roadmap</h1>
+            <p class="roadmap-meta">Created on <%= roadmap.getCreatedAt().format(fmt) %> • Plan ID: #<%= roadmap.getId().substring(0,8) %></p>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Learning Hours</div>
-            <div class="stat-value">${roadmap.totalHours} hrs</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Estimated Cost</div>
-            <div class="stat-value">${roadmap.estimatedCost}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Success Probability</div>
-            <div class="stat-value" style="color: var(--success);">${roadmap.motivationalMetrics.successProbability}</div>
-        </div>
-    </div>
 
-    <div class="section-title">🎯 Skill-Gap Analysis</div>
-    <div class="skills-grid">
-        <c:forEach items="${roadmap.skills}" var="skill">
-            <c:set var="catClass" value="cat-${skill.category.toLowerCase()}"/>
-            <div class="skill-card">
-                <div class="skill-header">
-                    <span class="skill-name">${skill.skillName}</span>
-                    <span class="category-badge ${catClass}">${skill.category}</span>
-                </div>
-                <div class="skill-body">
-                    <div class="level-bar-container">
-                        <div class="level-label">
-                            <span>Proficiency Level</span>
-                            <span>${skill.currentLevel} → ${skill.targetLevel}</span>
-                        </div>
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: ${(skill.currentLevel / 5.0) * 100}%"></div>
-                            <div class="level-target" style="left: ${(skill.targetLevel / 5.0) * 100}%"></div>
-                        </div>
+        <div class="progress-card">
+            <div class="progress-meter">
+                <svg viewBox="0 0 100 100">
+                    <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                    <circle class="progress-fill" cx="50" cy="50" r="45" 
+                            style="stroke-dasharray: 283; stroke-dashoffset: <%= 283 - (283 * roadmap.getCompletionPercentage() / 100) %>"></circle>
+                </svg>
+                <div class="progress-text" id="overall-percent">${roadmap.completionPercentage}%</div>
+            </div>
+            <div class="progress-info">
+                <div class="stat-label">Current Mastery</div>
+                <h3 id="overall-status-title"><%= roadmap.getCompletionPercentage() == 100 ? "Roadmap Completed! 🎉" : "Skills Progress" %></h3>
+                <p>You've completed <span id="completed-count"><%= roadmap.getCompletedTaskCount() %></span> of <span id="total-count"><%= roadmap.getTotalTaskCount() %></span> critical skill gaps.</p>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="stat-label">Plan Status</span>
+                        <span class="stat-value" id="roadmap-status-text" style="text-transform: capitalize; color: var(--accent);">${roadmap.status}</span>
                     </div>
- 
-                    <c:forEach items="${skill.phases}" var="phase">
-                        <div class="phase-item active">
-                            <div class="phase-name">${phase.phaseName}</div>
-                            <div class="phase-meta">⏱ ${phase.duration} | 📚 ${phase.hours} hours</div>
-                            <div class="resource-list">
-                                <c:forEach items="${phase.resources}" var="res">
-                                    <a href="${res.link}" target="_blank" class="resource-link">
-                                        <span>${res.name} <span class="res-type">${res.type}</span></span>
-                                        <span style="color: var(--text-muted); font-size: 0.7rem;">${res.type == 'Free' ? 'FREE' : res.price}</span>
-                                    </a>
-                                </c:forEach>
-                            </div>
-                            <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--success); font-weight: 600;">
-                                🏁 Milestone: ${phase.milestone}
-                            </div>
-                        </div>
-                    </c:forEach>
+                    <div class="stat-item">
+                        <span class="stat-label">Days Remaining</span>
+                        <span class="stat-value"><%= roadmap.getTasks().get(0).getRemainingDays() %> Days</span>
+                    </div>
                 </div>
             </div>
-        </c:forEach>
-    </div>
+        </div>
 
-    <div class="section-title">📅 12-Week Master Timeline</div>
-    <div class="timeline-container">
-        <div class="timeline-grid">
-            <c:forEach items="${roadmap.timeline}" var="item">
-                <div class="timeline-week">
-                    <div class="week-num">Week ${item.week}</div>
-                    <div class="week-focus">${item.focus}</div>
-                    <ul class="week-tasks">
-                        <c:forEach items="${item.tasks}" var="task">
-                            <li>${task}</li>
-                        </c:forEach>
-                    </ul>
-                    <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">
-                        <strong>Outcome:</strong> ${item.expectedOutcome}
+        <div class="tasks-grid">
+            <% for (RoadmapTask task : roadmap.getTasks()) { %>
+                <div class="task-card <%= task.isCompleted() ? "completed" : "" %>" id="task-<%= task.getId() %>">
+                    <div class="task-header">
+                        <div>
+                            <div class="skill-name"><%= task.getSkill() %></div>
+                            <div class="timeline">
+                                <span><i class="ti ti-calendar"></i> <%= task.getStartDate().format(fmt) %></span>
+                                <span><i class="ti ti-target"></i> <%= task.getTargetDate().format(fmt) %></span>
+                            </div>
+                        </div>
+                        <span class="badge <%= task.getSeverity().toLowerCase() %>"><%= task.getSeverity() %></span>
+                    </div>
+
+                    <div class="task-body">
+                        <p class="task-description"><%= task.getDescription() %></p>
+                        <div class="action-plan" style="margin-bottom: 1rem;">
+                            <span class="action-label">30-Day Action Strategy</span>
+                            <%= task.getAction() %>
+                        </div>
+                        <div class="learning-resources">
+                            <span class="action-label">Recommended Resources & Docs</span>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <% String encodedSkill = java.net.URLEncoder.encode(task.getSkill(), "UTF-8"); %>
+                                <a href="https://www.youtube.com/results?search_query=<%= encodedSkill %>+tutorial" target="_blank" class="resource-link"><i class="ti ti-brand-youtube"></i> YouTube</a>
+                                <a href="https://www.udemy.com/courses/search/?q=<%= encodedSkill %>" target="_blank" class="resource-link"><i class="ti ti-book"></i> Udemy</a>
+                                <a href="https://www.coursera.org/search?query=<%= encodedSkill %>" target="_blank" class="resource-link"><i class="ti ti-certificate"></i> Coursera</a>
+                                <a href="https://www.google.com/search?q=<%= encodedSkill %>+official+documentation" target="_blank" class="resource-link"><i class="ti ti-file-text"></i> Docs</a>
+                                <a href="https://github.com/topics/<%= task.getSkill().toLowerCase().replace(" ", "-") %>" target="_blank" class="resource-link"><i class="ti ti-brand-github"></i> GitHub</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-label-row">
+                            <span>Task Progress</span>
+                            <span class="task-percent" id="task-percent-<%= task.getId() %>"><%= task.getProgressPercentage() %>%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="task-bar-<%= task.getId() %>" 
+                                 style="width: <%= task.getProgressPercentage() %>% ; background: <%= task.getProgressPercentage() > 80 ? "var(--success)" : (task.getProgressPercentage() > 50 ? "var(--warning)" : "var(--accent)") %>"></div>
+                        </div>
+                    </div>
+
+                    <div class="milestones-list">
+                        <span class="action-label">Milestones</span>
+                        <% for (String m : task.getMilestones()) { 
+                            boolean isDone = task.getCompletedMilestones().contains(m);
+                        %>
+                            <div class="milestone-item <%= isDone ? "checked" : "" %>">
+                                <input type="checkbox" <%= isDone ? "checked disabled" : "" %> 
+                                       onclick="toggleMilestone('<%= roadmap.getId() %>', '<%= task.getId() %>', '<%= m.replace("'", "\\'") %>')">
+                                <span><%= m %></span>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="task-footer">
+                        <div class="status-badge <%= task.getStatus().toLowerCase().replace(" ", "-") %>" id="status-<%= task.getId() %>">
+                            <% if (task.isCompleted()) { %>
+                                <i class="ti ti-circle-check"></i> Completed
+                            <% } else if (task.isOverdue()) { %>
+                                <i class="ti ti-alert-triangle"></i> At Risk
+                            <% } else { %>
+                                <i class="ti ti-clock"></i> On Track
+                            <% } %>
+                        </div>
+                        <button class="btn-complete" id="btn-complete-<%= task.getId() %>" 
+                                onclick="markTaskComplete('<%= roadmap.getId() %>', '<%= task.getId() %>')"
+                                <%= task.isCompleted() ? "disabled" : "" %>>
+                            <%= task.isCompleted() ? "Task Completed" : "Mark as Finished" %>
+                        </button>
                     </div>
                 </div>
-            </c:forEach>
+            <% } %>
+        </div>
+
+        <div style="margin-top: 4rem; text-align: center;">
+            <a href="<%= request.getContextPath() %>/dashboard" class="nav-item" style="display: inline-flex; justify-content: center; width: auto; padding: 1rem 2rem;">
+                <i class="ti ti-arrow-left"></i> Back to Dashboard
+            </a>
         </div>
     </div>
 
-    <div class="grid-2">
-        <div class="list-card">
-            <div class="section-title" style="color: var(--warning);">🛑 Risk Mitigation</div>
-            <ul class="risk-list">
-                <c:forEach items="${roadmap.riskMitigation}" var="risk">
-                    <li>${risk}</li>
-                </c:forEach>
-            </ul>
-        </div>
-        <div class="list-card">
-            <div class="section-title" style="color: var(--success);">🏆 Success Checklist</div>
-            <ul class="success-list">
-                <c:forEach items="${roadmap.successChecklist}" var="item">
-                    <li>${item}</li>
-                </c:forEach>
-            </ul>
+    <!-- Completion Modal -->
+    <div id="completion-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="celebration-icon">🎉</span>
+            <h2 class="modal-title">Roadmap Complete!</h2>
+            <p class="modal-text">Congratulations! You've mastered all the skill gaps required for the <strong>${roadmap.targetRole}</strong> role. Your growth is impressive!</p>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-share" onclick="shareAchievement()">Share on LinkedIn</button>
+                <button class="btn-modal btn-dashboard" onclick="window.location.href='dashboard'">Return to Dashboard</button>
+            </div>
         </div>
     </div>
 
-    <div class="stat-card" style="text-align: center; background: linear-gradient(135deg, var(--card) 0%, rgba(129, 140, 248, 0.05) 100%);">
-        <div class="stat-label">Estimated ROI</div>
-        <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">
-            Score Improvement: <span style="color: var(--success);">${roadmap.motivationalMetrics.scoreImprovement}</span>
-        </div>
-        <div style="font-size: 1.125rem; color: var(--text-muted);">
-            Expected Salary: <span style="color: white;">${roadmap.motivationalMetrics.salaryGrowth}</span>
-        </div>
-    </div>
-
-    <div style="margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 0.75rem;">
-        This roadmap is AI-generated based on your unique profile. Timelines are estimates based on standard learning curves.
-    </div>
-
+    <script src="<%= request.getContextPath() %>/assets/js/roadmap.js"></script>
 </body>
 </html>

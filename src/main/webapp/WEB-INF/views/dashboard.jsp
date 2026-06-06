@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page import="com.resumeanalyzer.model.AnalysisResult" %>
+<%@ page import="com.resumeanalyzer.model.Roadmap" %>
+<%@ page import="com.resumeanalyzer.xml.RoadmapXmlManager" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Collections" %>
 <%@ page import="java.util.ArrayList" %>
@@ -316,11 +316,11 @@
             <i class="ti ti-upload" style="color: var(--accent);"></i> Analyze New Resume
         </div>
         <div class="card">
-            <c:if test="${not empty error}">
-                <div class="alert-error"><i class="ti ti-alert-circle"></i> ${error}</div>
-            </c:if>
+            <% if (request.getAttribute("error") != null) { %>
+                <div class="alert-error"><i class="ti ti-alert-circle"></i> <%= request.getAttribute("error") %></div>
+            <% } %>
 
-            <form id="uploadForm" action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data">
+            <form id="uploadForm" action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data" novalidate>
                 <div class="form-group">
                     <label>Resume File (.pdf, .txt)</label>
                     <div id="dropZone" class="file-label">
@@ -414,21 +414,23 @@
             <i class="ti ti-history" style="color: var(--info);"></i> My Analyses
         </div>
         <div class="card">
-            <c:if test="${empty results}">
+            <% if (total == 0) { %>
                 <div class="empty-state">
                     <span class="empty-icon">📋</span>
                     <h3 class="empty-title">No analyses yet</h3>
                     <p class="empty-subtitle">Upload your first resume above to get started</p>
                     <a href="#upload-section" class="btn-jump">Analyze Now →</a>
                 </div>
-            </c:if>
-            <c:if test="${not empty results}">
+            <% } else { %>
                 <div class="table-controls">
                     <div class="search-box">
                         <i class="ti ti-search"></i>
                         <input type="text" id="roleSearch" placeholder="Search by role name..." onkeyup="filterTable()">
                     </div>
-                    <button class="btn-delete-all" onclick="deleteAllConfirm()">Delete All</button>
+                    <form action="<%= request.getContextPath() %>/delete-analysis" method="post" style="margin:0;" onsubmit="return confirm('Delete all analyses? This cannot be undone.');">
+                        <input type="hidden" name="action" value="all">
+                        <button type="submit" class="btn-delete-all">Delete All</button>
+                    </form>
                 </div>
                 <div class="table-container">
                     <table id="analysesTable">
@@ -443,34 +445,93 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach items="${results}" var="res">
-                            <c:set var="scoreColor" value="${res.score >= 70 ? 'var(--success)' : (res.score >= 50 ? 'var(--warning)' : 'var(--danger)')}"/>
-                            <c:set var="fitColor" value="${res.roleFit == 'Strong' ? 'var(--success)' : (res.roleFit == 'Moderate' ? 'var(--warning)' : 'var(--danger)')}"/>
+                            <% for (AnalysisResult res : results) { 
+                                String scoreColor = res.getScore() >= 70 ? "var(--success)" : (res.getScore() >= 50 ? "var(--warning)" : "var(--danger)");
+                                String fitColor = "Strong".equals(res.getRoleFit()) ? "var(--success)" : ("Moderate".equals(res.getRoleFit()) ? "var(--warning)" : "var(--danger)");
+                            %>
                             <tr>
-                                <td style="color: var(--text-muted); font-size: 0.75rem;">${res.timestamp.split('T')[0]}</td>
-                                <td class="role-cell" style="font-weight: 600;">${res.targetRole}</td>
+                                <td style="color: var(--text-muted); font-size: 0.75rem;"><%= res.getTimestamp().split("T")[0] %></td>
+                                <td class="role-cell" style="font-weight: 600;"><%= res.getTargetRole() %></td>
                                 <td>
-                                    <span class="score-pill" style="background: rgba(${scoreColor.contains('success') ? '16, 185, 129' : (scoreColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.15); color: ${scoreColor}">
-                                        ${res.score}%
+                                    <span class="score-pill" style="background: rgba(<%= scoreColor.contains("success") ? "16, 185, 129" : (scoreColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.15); color: <%= scoreColor %>">
+                                        <%= res.getScore() %>%
                                     </span>
                                 </td>
-                                <td style="font-weight: 700;">${res.scoreGrade}</td>
+                                <td style="font-weight: 700;"><%= res.getScoreGrade() %></td>
                                 <td>
-                                    <span class="fit-badge" style="background: rgba(${fitColor.contains('success') ? '16, 185, 129' : (fitColor.contains('warning') ? '245, 158, 11' : '239, 68, 68')}, 0.1); color: ${fitColor}">
-                                        ${res.roleFit}
+                                    <span class="fit-badge" style="background: rgba(<%= fitColor.contains("success") ? "16, 185, 129" : (fitColor.contains("warning") ? "245, 158, 11" : "239, 68, 68") %>, 0.1); color: <%= fitColor %>">
+                                        <%= res.getRoleFit() %>
                                     </span>
                                 </td>
-                                <td>
-                                    <a href="${pageContext.request.contextPath}/result?id=${res.id}" class="btn-view">
+                                <td style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <a href="<%= request.getContextPath() %>/result?id=<%= res.getId() %>" class="btn-view">
                                         <i class="ti ti-eye"></i> View
                                     </a>
+                                    <form action="<%= request.getContextPath() %>/delete-analysis" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this analysis?');">
+                                        <input type="hidden" name="id" value="<%= res.getId() %>">
+                                        <button type="submit" class="btn-view" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2);">
+                                            <i class="ti ti-trash"></i> Delete
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
-                            </c:forEach>
+                            <% } %>
                         </tbody>
                     </table>
                 </div>
-            </c:if>
+            <% } %>
+        </div>
+
+        <!-- My Learning Roadmaps -->
+        <div class="section-header" id="roadmaps">
+            <i class="ti ti-books" style="color: var(--accent);"></i> My Learning Roadmaps
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <%
+                String dashUserId = (String) session.getAttribute("userId");
+                List<Roadmap> userRoadmaps = RoadmapXmlManager.getRoadmapsByUser(dashUserId);
+                if (userRoadmaps == null || userRoadmaps.isEmpty()) {
+            %>
+                <div class="empty-state" style="padding: 2rem;">
+                    <p class="empty-subtitle">No active roadmaps. Save a roadmap from your analysis results to start tracking progress.</p>
+                </div>
+            <% } else { %>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+                    <% for (Roadmap r : userRoadmaps) { 
+                        if ("archived".equals(r.getStatus())) continue;
+                    %>
+                        <div class="tip-card" style="border-left: 4px solid var(--accent); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Roadmap</span>
+                                    <span class="fit-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--accent);"><%= r.getStatus() %></span>
+                                </div>
+                                <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;"><%= r.getTargetRole() %></h4>
+                                
+                                <div style="margin-bottom: 1.5rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.5rem;">
+                                        <span style="color: var(--text-muted);">Overall Progress</span>
+                                        <span style="font-weight: 700;"><%= r.getCompletionPercentage() %>%</span>
+                                    </div>
+                                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden;">
+                                        <div style="width: <%= r.getCompletionPercentage() %>%; height: 100%; background: var(--accent);"></div>
+                                    </div>
+                                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                        <%= r.getCompletedTaskCount() %> / <%= r.getTotalTaskCount() %> tasks completed
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Updated <%= r.getUpdatedAt().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd")) %></span>
+                                <a href="<%= request.getContextPath() %>/roadmap?id=<%= r.getId() %>" class="btn-view">
+                                    <i class="ti ti-arrow-right"></i> Continue
+                                </a>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
         </div>
 
         <!-- Footer -->
@@ -535,11 +596,11 @@
           </div>
         </form>
 
-        <c:if test="${not empty settingsMsg}">
+        <% if (request.getAttribute("settingsMsg") != null) { %>
           <div style="margin-top:16px; padding:12px; background:#10B98120; border:1px solid #10B981; border-radius:8px; color:#10B981; text-align:center">
-            ${settingsMsg}
+            <%= request.getAttribute("settingsMsg") %>
           </div>
-        </c:if>
+        <% } %>
       </div>
     </div>
 

@@ -17,7 +17,7 @@ public class SessionFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
         String uri = httpRequest.getRequestURI();
 
-        boolean protectedRoute = uri.contains("/dashboard") || uri.contains("/upload") || uri.contains("/result") || uri.contains("/settings") || uri.contains("/analyses") || uri.contains("/roadmap");
+        boolean protectedRoute = uri.contains("/dashboard") || uri.contains("/upload") || uri.contains("/result") || uri.contains("/settings") || uri.contains("/analyses") || uri.contains("/roadmap") || uri.contains("/save-roadmap") || uri.contains("/update-task-progress");
 
         if (protectedRoute && (session == null || session.getAttribute("userId") == null)) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");

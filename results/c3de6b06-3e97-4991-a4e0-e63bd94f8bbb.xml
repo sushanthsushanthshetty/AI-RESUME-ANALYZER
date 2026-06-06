@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<analyses>
+  <analysis id="311137a6-9647-47b6-bac0-1d3aed13be79" timestamp="2026-05-15T13:48:07.8090505">
+    <targetRole>FRONTEND DEVELPOER</targetRole>
+    <score>22</score>
+    <confidence>high</confidence>
+    <roleFit>Mismatch</roleFit>
+    <summary>DOMAIN MISMATCH DETECTED: This resume is from a Java Backend background and does not meet the primary skill requirements for a FRONTEND DEVELPOER role. Only 22% of required FRONTEND domain skills were found.</summary>
+    <strengths>
+      <strength>The resume demonstrates solid backend development expertise, including 3 years of Java experience, proficiency with Spring Boot, REST API design, and microservices architecture, as well as measurable impact such as reducing API response time by 35% and achieving high code coverage with JUnit and Mockito.</strength>
+    </strengths>
+    <skillGaps>
+      <gap severity="critical">
+        <title>angular</title>
+        <fix>Complete a hands-on 30-day project using angular and publish it on GitHub before applying.</fix>
+      </gap>
+      <gap severity="critical">
+        <title>vue</title>
+        <fix>Complete a hands-on 30-day project using vue and publish it on GitHub before applying.</fix>
+      </gap>
+      <gap severity="critical">
+        <title>html</title>
+        <fix>Complete a hands-on 30-day project using html and publish it on GitHub before applying.</fix>
+      </gap>
+      <gap severity="critical">
+        <title>css</title>
+        <fix>Complete a hands-on 30-day project using css and publish it on GitHub before applying.</fix>
+      </gap>
+      <gap severity="critical">
+        <title>javascript</title>
+        <fix>Complete a hands-on 30-day project using javascript and publish it on GitHub before applying.</fix>
+      </gap>
+    </skillGaps>
+    <keywordMisses>
+      <keyword>HTML</keyword>
+      <keyword>CSS</keyword>
+      <keyword>JavaScript</keyword>
+      <keyword>React</keyword>
+      <keyword>UI/UX</keyword>
+    </keywordMisses>
+    <suggestions>
+      <suggestion>Add a dedicated 'Frontend Skills' section highlighting HTML, CSS, JavaScript, and React experience, referencing the 'Projects' where React was used.</suggestion>
+      <suggestion>Include concrete UI/UX achievements or redesigns in the 'Professional Summary' to show design awareness.</suggestion>
+      <suggestion>Showcase a frontend portfolio link in the header to demonstrate practical application of frontend technologies.</suggestion>
+    </suggestions>
+    <interviewRisk>Candidate will be screened out immediately due to absence of core FRONTEND domain skills.</interviewRisk>
+    <marketEdge>NONE</marketEdge>
+  </analysis>
+</analyses>
